@@ -101,27 +101,27 @@ export default function VoiceCoachingPlayer({ coachingData }) {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="glass-card p-0 overflow-hidden bg-gradient-to-br from-[var(--surface)] to-[var(--background)] border border-[var(--accent)]/20 shadow-2xl shadow-purple-900/10 mb-8"
+            className="glass-card p-0 overflow-hidden bg-gradient-to-br from-[var(--surface)] to-[var(--background)] border border-[var(--accent)]/10 shadow-2xl shadow-[var(--background)]/40 h-full"
         >
-            <div className="flex flex-col md:flex-row">
+            <div className="flex flex-col md:flex-row h-full">
                 {/* Left Side: Text Insight */}
-                <div className="p-8 md:w-3/5 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[var(--glass-border)] relative">
-                    <div className="absolute top-4 left-4 bg-[var(--surface)]/50 backdrop-blur rounded-full px-3 py-1 flex items-center gap-2 text-xs font-bold text-[var(--accent)] border border-[var(--accent)]/20 shadow-sm">
-                        <Sparkles size={12} fill="currentColor" /> AI Coach Insight
+                <div className="p-8 md:w-3/5 flex flex-col justify-center border-b md:border-b-0 md:border-r border-[var(--border)] relative">
+                    <div className="absolute top-4 left-4 bg-[var(--surface-highlight)]/10 backdrop-blur rounded-full px-3 py-1 flex items-center gap-2 text-xs font-black text-[var(--accent)] border border-[var(--accent)]/10 shadow-sm uppercase tracking-widest">
+                        <Sparkles size={12} fill="currentColor" /> AI Neural Insight
                     </div>
 
                     <div className="mt-6 mb-4">
-                        <h3 className="text-lg md:text-xl font-medium leading-relaxed italic text-[var(--text-primary)]">
+                        <h3 className="text-lg md:text-xl font-black leading-relaxed italic text-[var(--text-primary)] tracking-tight">
                             "{data.insight_text}"
                         </h3>
                     </div>
 
                     <div className="flex items-center gap-4 mt-auto">
-                        <span className="px-3 py-1 rounded-full bg-red-100 text-red-600 text-xs font-bold uppercase tracking-wider dark:bg-red-900/30 dark:text-red-300">
-                            Pattern: {data.pattern_detected}
+                        <span className="px-3 py-1 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-[10px] font-black uppercase tracking-widest border border-[var(--accent)]/10">
+                            Detection: {data.pattern_detected}
                         </span>
-                        <span className="text-xs text-[var(--text-secondary)]">
-                            Generated just now
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-50">
+                            Real-time Synthesis
                         </span>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ export default function VoiceCoachingPlayer({ coachingData }) {
                             whileTap={{ scale: 0.9 }}
                             onClick={togglePlay}
                             disabled={isLoading}
-                            className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white shadow-lg shadow-purple-500/40 relative group"
+                            className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-[var(--background)] shadow-xl shadow-[var(--accent)]/20 relative group border border-[var(--accent)]/10"
                         >
                             {isLoading ? (
                                 <Loader2 size={28} className="animate-spin" />
@@ -175,7 +175,7 @@ export default function VoiceCoachingPlayer({ coachingData }) {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="w-full mt-6 bg-[var(--glass-border)] h-1.5 rounded-full overflow-hidden cursor-pointer">
+                    <div className="w-full mt-6 bg-[var(--border)] h-1 rounded-full overflow-hidden cursor-pointer">
                         <motion.div
                             className="h-full bg-gradient-primary"
                             style={{ width: `${progress}%` }}

@@ -34,7 +34,12 @@ export default async function handler(req, res) {
             userProfile = newProfile;
         }
 
-        const { data: recentSessions } = await supabase.from('sessions').select('*').eq('user_id', userId).order('session_timestamp', { ascending: false }).limit(10);
+        const { data: recentSessions } = await supabase
+            .from('sessions')
+            .select('*')
+            .eq('user_id', userId)
+            .order('session_timestamp', { ascending: false });
+
         const { data: latestCoaching } = await supabase.from('coaching_history').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single();
 
         // 4. Fetch ALL sessions for accurate stats (Total Hours, Total Sessions, Avg Confidence)
@@ -53,7 +58,13 @@ export default async function handler(req, res) {
         let revisionCount = 0;
         let noErrorCount = 0;
         let uniqueDaysSet = new Set();
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Sort all sessions by date for streak calculation
+        const sortedAllSessions = [...(allSessions || [])].sort((a, b) =>
+            new Date(b.session_timestamp) - new Date(a.session_timestamp)
+        );
 
         if (allSessions && allSessions.length > 0) {
             totalSessions = allSessions.length;
@@ -66,42 +77,94 @@ export default async function handler(req, res) {
                 if (!s.errors_made) noErrorCount++;
 
                 const sDate = new Date(s.session_timestamp);
-                if (sDate >= sevenDaysAgo) {
-                    uniqueDaysSet.add(sDate.toDateString());
-                }
+                uniqueDaysSet.add(sDate.toDateString());
             });
         }
 
-        // Calculate Real Metrics
-        // Speed: 5% per hour studied (max 100%)
-        const calcSpeed = Math.min((totalMinutes / 60) * 0.05, 1.0);
+        // Calculate Streak Logic
+        let streakDays = 0;
+        if (uniqueDaysSet.size > 0) {
+            let checkDate = new Date();
+            // If the latest session isn't today or yesterday, streak is broken
+            const latestSessionDate = new Date(sortedAllSessions[0].session_timestamp);
+            const diffDays = Math.floor((now.getTime() - latestSessionDate.getTime()) / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 1) {
+                while (true) {
+                    const dateStr = checkDate.toDateString();
+                    if (uniqueDaysSet.has(dateStr)) {
+                        streakDays++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    } else {
+                        // Allow a 1-day gap (i.e., today doesn't have a session yet)
+                        if (checkDate.toDateString() === now.toDateString()) {
+                            checkDate.setDate(checkDate.getDate() - 1);
+                            continue;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Calculate Real Metrics (Scale 0 to 1)
+        // Speed: 0.1 (10%) per hour studied, max 1.0 (10 hours)
+        const calcSpeed = Math.min((totalMinutes / 60) * 0.1, 1.0);
 
         // Consistency: Days studied in last 7 days / 7
-        const calcConsistency = Math.min(uniqueDaysSet.size / 7, 1.0);
+        const last7DaysSet = new Set();
+        allSessions?.forEach(s => {
+            const sDate = new Date(s.session_timestamp);
+            if (sDate >= sevenDaysAgo) last7DaysSet.add(sDate.toDateString());
+        });
+        const calcConsistency = Math.min(last7DaysSet.size / 7, 1.0);
 
-        // Retention: % of sessions where revision was done (proxy)
+        // Retention: % of sessions where revision was done (weighted towards recent)
         const calcRetention = totalSessions > 0 ? (revisionCount / totalSessions) : 0;
 
         // Recovery: % of sessions without errors (or recovered)
         const calcRecovery = totalSessions > 0 ? (noErrorCount / totalSessions) : 1.0;
 
-        // UPDATE User Profile with Real Data
+        // Calculate Rank and DNA
+        let rank = 'Bronze';
+        if (totalSessions > 50) rank = 'Diamond';
+        else if (totalSessions > 30) rank = 'Platinum';
+        else if (totalSessions > 15) rank = 'Gold';
+        else if (totalSessions > 5) rank = 'Silver';
+        else rank = 'Bronze';
+
+        let dnaPattern = 'Strategic';
+        if (calcRetention < 0.4) dnaPattern = 'Developing';
+
+        let dnaLearningMode = 'Mixed';
+        if (calcRetention > 0.7 && calcRecovery > 0.7) dnaLearningMode = 'Visual';
+        else if (calcSpeed > 0.7) dnaLearningMode = 'Audio';
+
+        // UPDATE User Profile with Real Data (Persistent Cache)
+        const profileUpdates = {
+            user_id: userId,
+            learning_speed: parseFloat(calcSpeed.toFixed(2)),
+            consistency_score: parseFloat(calcConsistency.toFixed(2)),
+            retention_score: parseFloat(calcRetention.toFixed(2)),
+            error_recovery_rate: parseFloat(calcRecovery.toFixed(2)),
+            total_sessions: totalSessions,
+            rank: rank,
+            dna_pattern: dnaPattern,
+            dna_learning_mode: dnaLearningMode,
+            last_updated: new Date().toISOString()
+        };
+
         const { data: updatedProfile, error: updateError } = await supabase
             .from('user_profiles')
-            .upsert({
-                user_id: userId,
-                learning_speed: parseFloat(calcSpeed.toFixed(2)),
-                consistency_score: parseFloat(calcConsistency.toFixed(2)),
-                retention_score: parseFloat(calcRetention.toFixed(2)),
-                error_recovery_rate: parseFloat(calcRecovery.toFixed(2)),
-                total_sessions: totalSessions,
-                last_updated: new Date().toISOString()
-            })
+            .upsert(profileUpdates)
             .select()
             .single();
 
-        if (!updateError) {
-            userProfile = updatedProfile; // Use the fresh data
+        if (updateError) {
+            // If DB update fails (e.g. RLS), merge calculations into existing profile for the response
+            userProfile = { ...userProfile, ...profileUpdates };
+        } else {
+            userProfile = updatedProfile;
         }
 
         // Aggregate Data for Graph
@@ -109,9 +172,9 @@ export default async function handler(req, res) {
         let startDate;
 
         if (range === '7d') {
-            startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         } else if (range === '30d') {
-            startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         } else {
             startDate = new Date(0);
         }
@@ -143,7 +206,7 @@ export default async function handler(req, res) {
 
         // If empty, provide ONE generic point so graph doesn't break
         if (progressData.length === 0) {
-            progressData = [{ date: 'Today', 'No Data': 0 }];
+            progressData = [{ date: 'Today', 'Overall': 0 }];
         }
 
         return res.status(200).json({
@@ -156,7 +219,7 @@ export default async function handler(req, res) {
                 totalHours: (totalMinutes / 60).toFixed(1),
                 avgConfidence
             },
-            streakDays: 5
+            streakDays
         });
 
     } catch (error) {

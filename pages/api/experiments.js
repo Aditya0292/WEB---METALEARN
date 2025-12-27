@@ -78,6 +78,29 @@ export default async function handler(req, res) {
             .single();
 
         if (error) return res.status(500).json({ error: error.message });
+
+        // Sync with User Profile: Increment session count and update rank
+        try {
+            const userId = current.user_id;
+            const { data: profile } = await supabase.from('user_profiles').select('*').eq('user_id', userId).single();
+            if (profile) {
+                const newTotal = (profile.total_sessions || 0) + 1;
+                let rank = 'Bronze';
+                if (newTotal > 50) rank = 'Diamond';
+                else if (newTotal > 30) rank = 'Platinum';
+                else if (newTotal > 15) rank = 'Gold';
+                else if (newTotal > 5) rank = 'Silver';
+
+                await supabase.from('user_profiles').update({
+                    total_sessions: newTotal,
+                    rank: rank,
+                    last_updated: new Date()
+                }).eq('user_id', userId);
+            }
+        } catch (e) {
+            console.error("Failed to sync Lab session to profile:", e);
+        }
+
         return res.status(200).json(data);
     }
 

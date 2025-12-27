@@ -6,20 +6,33 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Activity, Mic, TrendingUp, Brain, Zap, Clock, ChevronRight, Play, Plus } from 'lucide-react';
 import LearningVectorDashboard from '@/components/LearningVectorDashboard';
 import VoiceCoachingPlayer from '@/components/VoiceCoachingPlayer';
+import Typewriter from '@/components/Typewriter';
 
 // --- Components ---
 
 function Navbar() {
+  const { scrollY } = useScroll();
+  // Hardcoded Dark Mode Surface RGB: 31, 41, 55 for #1F2937
+  const navBg = useTransform(scrollY, [0, 100], ["rgba(31, 41, 55, 0.5)", "rgba(31, 41, 55, 0.8)"]);
+  const navBorder = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.05)"]);
+  const navScale = useTransform(scrollY, [0, 100], [1, 0.98]);
+
   return (
-    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50 transition-all duration-300">
-      <div className="w-full h-16 px-6 rounded-full bg-[#15151A]/70 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] flex items-center justify-between">
+    <motion.nav
+      style={{ scale: navScale }}
+      className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50 transition-all duration-300"
+    >
+      <motion.div
+        style={{ backgroundColor: navBg, borderColor: navBorder }}
+        className="w-full h-16 px-6 rounded-full backdrop-blur-md border border-transparent shadow-[0_8px_32px_rgba(0,0,0,0.2)] flex items-center justify-between"
+      >
 
         {/* Logo */}
         <div className="flex items-center gap-3 group cursor-pointer">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-bold text-lg group-hover:scale-105 transition-transform">
-            M
+          <div className="w-8 h-8 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <img src="/logo.png" alt="MetaLearn" className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
           </div>
-          <span className="font-bold text-lg tracking-tight text-white group-hover:text-gray-200 transition-colors">MetaLearn</span>
+          <span className="font-display font-black text-lg tracking-tight text-white group-hover:text-blue-500 transition-colors uppercase drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">MetaLearn</span>
         </div>
 
         {/* Center Links */}
@@ -31,21 +44,55 @@ function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <button className="hidden md:block text-sm font-medium text-gray-400 hover:text-white transition-colors">Log In</button>
-          <Link href="/dashboard" className="px-5 py-2 rounded-full bg-white text-black font-bold text-sm hover:bg-gray-100 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-            Launch App
+          <Link href="/auth" className="font-display hidden md:block text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+            Log In
+          </Link>
+          <Link href="/auth" className="font-display px-5 py-2 rounded-full bg-[var(--accent)] text-white font-black text-[10px] uppercase tracking-widest hover:brightness-110 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 shadow-lg shadow-[var(--accent)]/20 border border-[var(--accent)]/10">
+            Get Started
           </Link>
         </div>
-      </div>
-    </nav>
+      </motion.div>
+    </motion.nav>
   );
 }
 
 function NavLink({ href, children }) {
   return (
-    <a href={href} className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative group">
+    <a href={href} className="font-display text-sm font-medium text-gray-400 hover:text-[var(--accent)] transition-colors relative group">
       {children}
     </a>
+  )
+}
+
+function MagneticButton({ children, className }) {
+  const ref = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = ref.current.getBoundingClientRect();
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    setPosition({ x: middleX * 0.3, y: middleY * 0.3 });
+  }
+
+  const reset = () => {
+    setPosition({ x: 0, y: 0 });
+  }
+
+  const { x, y } = position;
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      animate={{ x, y }}
+      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   )
 }
 
@@ -57,18 +104,20 @@ function FeatureCard({ title, desc, icon: Icon, delay }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.5 }}
-      className="group relative p-8 rounded-2xl bg-[#15151A]/60 backdrop-blur-xl border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] overflow-hidden"
+      // REMOVED glass-card class to prevent light mode bleed.
+      // Hardcoded bg-[#13151a] for deep dark card.
+      className="group relative p-10 rounded-[32px] border border-gray-800 hover:border-blue-500/50 transition-all duration-500 shadow-2xl bg-[#13151a] overflow-hidden"
     >
-      {/* Glossy Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="absolute -inset-px bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500" />
+      {/* Glossy Overlay - Adjusted for Dark Mode */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute -inset-px bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 blur-2xl transition-opacity duration-500" />
 
       <div className="relative z-10 w-full h-full flex flex-col">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#1a1f2e] to-[#0d1117] border border-white/10 flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:border-cyan-500/50 transition-all duration-300 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.5)]">
-          <Icon size={28} />
+        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-gray-800 flex items-center justify-center text-blue-500 mb-8 group-hover:scale-110 group-hover:border-blue-500/50 transition-all duration-500 shadow-xl">
+          <Icon size={32} />
         </div>
-        <h3 className="text-xl font-bold mb-3 text-white group-hover:text-cyan-300 transition-colors">{title}</h3>
-        <p className="text-gray-400 leading-relaxed text-sm group-hover:text-gray-300">{desc}</p>
+        <h3 className="text-2xl font-black mb-4 text-white group-hover:text-blue-500 transition-colors uppercase tracking-tight">{title}</h3>
+        <p className="font-display text-gray-400 leading-relaxed text-sm group-hover:text-white font-medium opacity-60 group-hover:opacity-100 transition-all">{desc}</p>
       </div>
     </motion.div>
   )
@@ -77,7 +126,7 @@ function FeatureCard({ title, desc, icon: Icon, delay }) {
 
 function SidebarItem({ icon: Icon, label, active }) {
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors ${active ? 'bg-cyan-900/20 text-cyan-400 border border-cyan-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${active ? 'bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/10'}`}>
       <Icon size={18} />
       <span className="text-sm font-medium">{label}</span>
     </div>
@@ -106,8 +155,15 @@ export default function Home() {
   }
 
   // Container Parallax
-  const x = useTransform(mouseX, [-1000, 1000], [20, -20]);
-  const y = useTransform(mouseY, [-1000, 1000], [20, -20]);
+  const x = useTransform(mouseX, [-1000, 1000], [15, -15]);
+  const y = useTransform(mouseY, [-1000, 1000], [15, -15]);
+
+  // Scroll Progress Transforms for Hero
+  const { scrollY } = useScroll();
+  const heroScale = useTransform(scrollY, [0, 500], [1, 0.9]);
+  const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+  const heroY = useTransform(scrollY, [0, 500], [0, -100]);
+
 
   // Mock Data for Preview
   const mockCoaching = {
@@ -146,9 +202,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0E] text-white selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#0F1115] text-white selection:bg-blue-500/30 overflow-x-hidden font-sans">
       <Head>
-        <title>MetaLearn AI | The Future of Learning</title>
+        <title>MetaLearn | The Future of Learning</title>
       </Head>
 
       {/* Script for Spline */}
@@ -156,12 +212,18 @@ export default function Home() {
 
       <Navbar />
 
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-gradient-end)] z-[100] origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
+
       <main>
         {/* --- HERO SECTION --- */}
         <section
           ref={heroRef}
           onMouseMove={handleHeroMove}
-          className="relative min-h-[140vh] flex flex-col items-center pt-32 px-6 overflow-hidden md:px-0"
+          className="relative min-h-[120vh] flex flex-col items-center pt-32 px-6 overflow-hidden md:px-0"
         >
           {/* SPLINE BACKGROUND */}
           <motion.div
@@ -171,30 +233,49 @@ export default function Home() {
             {/* @ts-ignore */}
             <spline-viewer url="https://prod.spline.design/SM-CqQU8sBrOLdOW/scene.splinecode"></spline-viewer>
 
-            {/* Overlay to dim it slightly so text pops - REDUCED OPACITY */}
-            <div className="absolute inset-0 bg-[#0B0B0E]/20 pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0E] via-transparent to-[#0B0B0E] pointer-events-none" />
+            {/* Overlay removed as per user request to keep it dark */}
+            <div className="absolute inset-0 pointer-events-none" />
           </motion.div>
 
-          <div className="relative z-10 text-center max-w-5xl mx-auto mt-10 pointer-events-none">
+          {/* Floating Parallax Glows */}
+          <motion.div
+            style={{ y: useTransform(scrollY, [0, 1000], [0, -200]) }}
+            className="absolute top-1/4 -left-20 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none"
+          />
+          <motion.div
+            style={{ y: useTransform(scrollY, [0, 1000], [0, 200]) }}
+            className="absolute bottom-1/4 -right-20 w-96 h-96 bg-[var(--accent-gradient-end)]/5 rounded-full blur-[120px] pointer-events-none"
+          />
+
+          <motion.div
+            style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}
+            className="relative z-10 text-center max-w-5xl mx-auto mt-10 pointer-events-none"
+          >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/30 border border-cyan-500/20 text-xs font-medium text-cyan-400 mb-8 backdrop-blur-sm pointer-events-auto"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent)] mb-10 backdrop-blur-md pointer-events-auto"
             >
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
-              AI-Powered Meta-Learning Engine v1.0
+              <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shadow-[0_0_10px_var(--accent-glow)]" />
+              Neural Engine v4.2 Active
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-6xl md:text-8xl font-bold tracking-tight mb-8 drop-shadow-2xl"
+              className="font-display text-7xl md:text-[10rem] leading-[0.85] font-bold tracking-tighter mb-8 drop-shadow-2xl uppercase"
             >
               Master any skill. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-purple-400 font-extrabold pb-2">
-                In record time.
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-600 to-slate-400 text-transparent bg-clip-text drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] text-4xl md:text-7xl font-bold pb-2 block mt-2">
+                <Typewriter
+                  phrases={[
+                    "In record time.",
+                    "With neural precision.",
+                    "At cognitive peak.",
+                    "Without burnout."
+                  ]}
+                />
               </span>
             </motion.h1>
 
@@ -202,133 +283,172 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed"
+              className="font-display text-lg text-gray-200 max-w-2xl mx-auto mb-16 leading-relaxed font-bold uppercase tracking-widest drop-shadow-md"
             >
-              The first intelligent coach that analyzes <strong>how</strong> you learn, not just <strong>what</strong> you learn. Optimized for retention, speed, and mastery.
+              Synchronize your cognitive throughput with our neural vector engine. Optimized for stability, velocity, and mastery.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center pointer-events-auto"
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center pointer-events-auto"
             >
-              <Link href="/dashboard" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] shadow-[0_0_40px_-10px_rgba(6,182,212,0.5)]">
-                Start Learning Now
-                <ArrowRight size={20} />
-              </Link>
-              <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-semibold flex items-center justify-center gap-3 transition-colors backdrop-blur-sm group">
-                <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                  <Play size={12} fill="currentColor" />
-                </span>
-                Watch 1-min Demo
-              </button>
+              <MagneticButton className="w-full sm:w-auto">
+                <Link href="/auth" className="w-full px-10 py-5 rounded-2xl bg-[var(--accent)] text-white font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all hover:scale-[1.05] shadow-2xl shadow-[var(--accent)]/30 border border-[var(--accent)]/20">
+                  Join the Laboratory
+                  <ArrowRight size={20} />
+                </Link>
+              </MagneticButton>
+              <MagneticButton className="w-full sm:w-auto">
+                <button className="w-full px-10 py-5 rounded-2xl bg-[#374151]/5 border border-gray-700 hover:bg-[#374151]/10 text-white font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all backdrop-blur-md group">
+                  <span className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center group-hover:bg-[var(--accent)]/20 transition-all text-[var(--accent)]">
+                    <Play size={14} fill="currentColor" />
+                  </span>
+                  Neural Protocol Demo
+                </button>
+              </MagneticButton>
             </motion.div>
-          </div>
+          </motion.div>
 
           {/* --- DASHBOARD PREVIEW --- */}
           <motion.div
-            className="relative max-w-[1240px] w-full mx-auto mt-32 z-20 pointer-events-auto" // Increased Margin Top
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+            initial={{ opacity: 0, y: 100 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative max-w-6xl w-full mx-auto mt-10 md:-mt-40 z-20 pointer-events-auto px-6 md:px-0"
           >
-            {/* Browser Wrap */}
-            <div className="rounded-2xl border border-white/10 bg-[#15151A]/90 backdrop-blur-2xl shadow-[0_0_100px_-20px_rgba(6,182,212,0.2)] overflow-hidden flex flex-col h-[800px]">
+            {/* Soft Ambient Radiance - ENHANCED */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-600/20 blur-[150px] rounded-full opacity-60 pointer-events-none -z-10" />
 
-              {/* Browser Header */}
-              <div className="h-12 border-b border-white/5 flex items-center px-4 gap-2 bg-[#000000]/40 shrink-0">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
-                  <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
-                  <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
+            {/* Main Preview Container - GRADIENT BORDER WRAPPER */}
+
+            {/* STACKED LAYER BEHIND (Immersed Depth) */}
+            <div className="absolute top-4 left-4 right-4 bottom-4 bg-[#0F1115]/50 border border-white/5 rounded-[30px] -z-10 scale-[0.98] translate-y-4 blur-sm" />
+
+            {/* Main Preview Container - GRADIENT BORDER WRAPPER */}
+            <div className="relative p-[2px] rounded-[30px] bg-gradient-to-b from-white/20 via-white/5 to-transparent shadow-2xl mx-auto max-w-6xl">
+              <div className="dark relative rounded-[29px] bg-[#0F1115]/90 backdrop-blur-3xl overflow-hidden flex h-[700px] text-left">
+
+                {/* Internal Gloss Highlight */}
+                <div className="absolute inset-x-0 top-0 h-px bg-white/10 opacity-50 pointer-events-none z-20" />
+
+                {/* MOCKED SIDEBAR */}
+                <div className="w-64 border-r border-[#262626] bg-[#0F1115] hidden md:flex flex-col p-6">
+                  <div className="flex items-center gap-2 mb-8 opacity-50">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black">M</div>
+                    <span className="font-black text-white tracking-tight">MetaLearn</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 text-white cursor-default">
+                      <Activity size={18} className="text-blue-500" />
+                      <span className="text-sm font-bold">Dashboard</span>
+                    </div>
+                    {['Log Session', 'Experiments', 'Profile', 'Insights', 'Progress'].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 opacity-60">
+                        <div className="w-4 h-4 rounded-sm bg-gray-700" />
+                        <span className="text-sm font-bold">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-auto flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-white/5 opacity-50">
+                    <div className="w-8 h-8 rounded-full bg-blue-600" />
+                    <div>
+                      <div className="w-20 h-3 bg-gray-700 rounded mb-1" />
+                      <div className="w-12 h-2 bg-gray-800 rounded" />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-3 py-1.5 rounded-md bg-[#ffffff]/5 text-[12px] text-gray-500 font-mono flex items-center gap-2 border border-white/5">
-                    <div className="w-3 h-3 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                    </div>
-                    https://metalearn.ai/dashboard
-                  </div>
-                </div>
-              </div>
 
-              {/* Dashboard Internal Layout */}
-              <div className="flex flex-1 overflow-hidden relative">
+                {/* MOCKED MAIN CONTENT */}
+                <div className="flex-1 overflow-hidden relative bg-[#0F1115] text-white flex flex-col">
 
-                {/* Sidebar */}
-                <motion.div
-                  initial={{ width: 240, opacity: 1 }}
-                  animate={{
-                    width: isSidebarOpen ? 240 : 0,
-                    opacity: isSidebarOpen ? 1 : 0
-                  }}
-                  className="bg-[#0B0B0E] border-r border-white/5 flex flex-col overflow-hidden"
-                >
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-8">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold">M</div>
-                      <span className="font-bold text-white tracking-tight">MetaLearn AI</span>
-                    </div>
+                  {/* Background Glows */}
+                  <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[100px] pointer-events-none" />
 
-                    <div className="space-y-2">
-                      <SidebarItem icon={Activity} label="Dashboard" active />
-                      <SidebarItem icon={Plus} label="Log Session" />
-                      <SidebarItem icon={Brain} label="Insights" />
-                      <SidebarItem icon={TrendingUp} label="Progress" />
-                    </div>
-                  </div>
+                  {/* Bottom Content Fade Mask */}
+                  <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0F1115] via-[#0F1115]/80 to-transparent z-10 pointer-events-none" />
 
-                  <div className="mt-auto p-6 border-t border-white/5">
-                    <SidebarItem icon={Activity} label="Settings" /> {/* Using Activity as placeholder for Settings if Cog not available */}
-                  </div>
-                </motion.div>
+                  {/* Scrollable Content Area */}
+                  <div className="flex-1 overflow-y-auto p-8 custom-scrollbar relative z-0">
 
-                {/* Main Content Area */}
-                <div className="flex-1 overflow-y-auto bg-[#0B0B0E] p-8 relative">
-
-                  {/* Toggle Button (Absolute to not shift layout unexpectedly, or in a header) */}
-                  <button
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="absolute top-8 left-4 z-10 p-2 rounded-lg bg-cyan-950/30 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-900/50 transition-colors shadow-lg shadow-cyan-900/20"
-                  >
-                    <ChevronRight size={20} className={`transform transition-transform ${isSidebarOpen ? 'rotate-180' : 'rotate-0'}`} />
-                  </button>
-
-                  <div className={`transition-all duration-300 ${isSidebarOpen ? 'pl-4' : 'pl-12'}`}>
-                    {/* Header Row */}
-                    <div className="flex justify-between items-center border-b border-white/5 pb-6 mb-8">
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-10">
                       <div>
-                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Welcome back, Scholar</h1>
-                        <p className="text-gray-500 text-sm mt-1">Your neural pathways are strengthening.</p>
+                        <h1 className="text-3xl font-black tracking-tight text-white mb-1">System Dashboard</h1>
+                        <p className="text-gray-400 text-sm font-medium">
+                          Neural Sync: <span className="text-green-500 font-mono uppercase tracking-tighter">Connected</span>
+                        </p>
                       </div>
-                      <div className="px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm shadow-lg shadow-cyan-500/20 flex items-center gap-2 cursor-pointer hover:bg-cyan-500 transition-colors">
-                        <Plus size={16} /> Log Session
+                      <div className="px-6 py-3 rounded-xl bg-blue-500 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 flex items-center gap-2 border border-blue-400/20">
+                        <Plus size={16} strokeWidth={3} /> Log Session
                       </div>
                     </div>
 
-                    {/* Player Row */}
-                    <div className="mb-8">
-                      <VoiceCoachingPlayer coachingData={mockCoaching} />
+                    {/* Quick Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                      {[
+                        { l: 'Total Deep Work', v: '3.5h', i: Clock, c: 'text-indigo-400' },
+                        { l: 'Total Sessions', v: '4', i: Brain, c: 'text-purple-400' },
+                        { l: 'Neural Streak', v: '0 Days', i: Zap, c: 'text-orange-400' },
+                        { l: 'Current Rank', v: 'Bronze', i: Activity, c: 'text-blue-500', r: true }
+                      ].map((stat, i) => (
+                        <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between h-24 md:h-32">
+                          <div className={`p-1.5 rounded-lg bg-white/5 w-fit ${stat.c}`}><stat.i size={14} /></div>
+                          <div>
+                            <p className="text-[8px] md:text-[9px] text-gray-500 font-black uppercase tracking-[0.2em] mb-1">{stat.l}</p>
+                            <h4 className={`text-lg md:text-xl font-black tracking-tight ${stat.r ? 'text-[#DCC48E]' : 'text-white'}`}>{stat.v}</h4>
+                          </div>
+                        </div>
+                      ))}
                     </div>
 
-                    {/* Charts Row */}
-                    <LearningVectorDashboard userProfile={mockProfile} />
+                    {/* Neural Parameters Row */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                      {[
+                        { t: 'Learning Speed', v: '35%', c: 'text-[#eab308]' },
+                        { t: 'Retention', v: '50%', c: 'text-[#0ea5e9]' },
+                        { t: 'Consistency', v: '14%', c: 'text-[#ec4899]' },
+                        { t: 'Error Recovery', v: '75%', c: 'text-[#22c55e]' }
+                      ].map((m, i) => (
+                        <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                          <div className={`mb-2 ${m.c}`}><Zap size={14} /></div>
+                          <div className="text-xl md:text-2xl font-black text-white">{m.v}</div>
+                          <div className="text-[8px] md:text-[10px] font-black uppercase tracking-wider text-white mt-1">{m.t}</div>
+                          <div className="text-[8px] md:text-[9px] text-gray-500 mt-1">Confidence gain / min</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom Row: AI + Radar */}
+                    <div className="flex flex-col md:grid md:grid-cols-4 gap-6 items-stretch h-auto md:h-96 pb-20 md:pb-0">
+                      <div className="w-full md:col-span-3 h-auto md:h-full">
+                        <VoiceCoachingPlayer coachingData={mockCoaching} />
+                      </div>
+                      <div className="w-full md:col-span-1 h-80 md:h-full">
+                        <LearningVectorDashboard userProfile={mockProfile} showMetrics={false} />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
+          {/* FADE OVERLAY TO COVER GAP - Per user request */}
+          {/* Hardcoded Dark Mode Background: bg-[#0F1115] */}
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0F1115] to-transparent pointer-events-none z-30" />
         </section>
 
 
         {/* --- FEATURES SECTION --- */}
-        <section className="py-32 px-6 relative bg-[#0B0B0E] z-10" id="features">
+        <section className="py-32 px-6 relative bg-[#0F1115] z-10" id="features">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-24">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">The Intelligence Layer</h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                We replaced traditional LMS logic with a dynamic learning vector engine powered by Claude 3.5.
+              <h2 className="font-display text-4xl md:text-6xl font-black mb-6 text-white uppercase tracking-tighter">The Intelligence Layer</h2>
+              <p className="text-gray-400 max-w-2xl mx-auto text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                Synchronized with the latest neural vector architecture.
               </p>
             </div>
 
@@ -374,13 +494,16 @@ export default function Home() {
         </section>
 
         {/* --- FOOTER --- */}
-        <footer className="border-t border-white/5 py-12 bg-[#050507] text-gray-500 text-sm text-center">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-            <p>© 2025 MetaLearn AI. Designed and Developed by <span className="font-bold text-gray-300">Aditya Hawaldar</span>.</p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Twitter</a>
+        <footer className="font-display border-t border-gray-800 py-16 bg-[#0F1115] text-gray-500 text-[10px] font-black uppercase tracking-widest text-center">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-40">
+            <div className="flex items-center gap-3 mb-6 md:mb-0">
+              <img src="/logo.png" alt="MetaLearn Logo" className="w-5 h-5 object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all" />
+              <p>© 2025 MetaLearn. Neural Design by <a href="https://www.linkedin.com/in/aditya-havaldar-205951288/" target="_blank" rel="noopener noreferrer" className="font-black text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors cursor-pointer">Aditya Hawaldar</a>.</p>
+            </div>
+            <div className="flex gap-8 mt-6 md:mt-0">
+              <a href="#" className="hover:text-[var(--accent)] transition-colors">Privacy</a>
+              <a href="#" className="hover:text-[var(--accent)] transition-colors">Terms</a>
+              <a href="#" className="hover:text-[var(--accent)] transition-colors">X / Neural</a>
             </div>
           </div>
         </footer>

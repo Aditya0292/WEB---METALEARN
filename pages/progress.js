@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp } from 'lucide-react';
 import ProgressTimeline from '@/components/ProgressTimeline';
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function ProgressPage() {
     const [stats, setStats] = useState({
@@ -14,22 +15,26 @@ export default function ProgressPage() {
     const [loading, setLoading] = useState(true);
 
     const [timeRange, setTimeRange] = useState('30d');
+    const [userId, setUserId] = useState(null);
 
     useEffect(() => {
+        // 1. Get User ID
+        supabase.auth.getUser().then(({ data }) => {
+            if (data?.user) setUserId(data.user.id);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!userId) return;
+
         const fetchData = async () => {
             try {
-                // Use the consistent Demo UUID
-                const DEMO_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
-                const res = await fetch(`/api/dashboard-data?userId=${DEMO_USER_ID}&range=${timeRange}`);
+                const res = await fetch(`/api/dashboard-data?userId=${userId}&range=${timeRange}`);
                 if (!res.ok) throw new Error("Failed to fetch");
 
                 const data = await res.json();
 
                 // Calculate Stats from the available data
-                // Note: dashboard-data returns 'recentSessions' (limit 10) and 'progressData' (aggregated).
-                // For accurate "Total" stats, we ideally need a dedicated full-history endpoint or rely on user_profile.
-                // Here we will use user_profile for totals if available, or estimate from graph data.
-
                 const graphData = data.progressData || [];
                 const serverStats = data.stats || { totalHours: 0, totalSessions: 0, avgConfidence: 0 };
 
@@ -48,12 +53,12 @@ export default function ProgressPage() {
         };
 
         fetchData();
-    }, [timeRange]);
+    }, [userId, timeRange]);
 
     return (
         <>
             <Head>
-                <title>Progress | MetaLearn AI</title>
+                <title>Progress | MetaLearn</title>
             </Head>
 
             <motion.div

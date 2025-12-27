@@ -8,38 +8,44 @@ import { supabase } from '@/lib/supabaseClient';
 export default function LogSessionPage() {
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const DEMO_USER_ID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'; // Fixed for demo
+    const [userId, setUserId] = useState(null);
 
-    const fetchSessions = async () => {
+    const fetchSessions = async (uid) => {
+        const targetId = uid || userId;
+        if (!targetId) return;
+
         try {
             const { data, error } = await supabase
                 .from('sessions')
                 .select('*')
-                .eq('user_id', DEMO_USER_ID)
+                .eq('user_id', targetId)
                 .order('session_timestamp', { ascending: false });
 
             if (error) throw error;
             setSessions(data || []);
         } catch (err) {
             console.error("Error fetching sessions:", err);
-            // Mock Data Fallback if DB is empty or fails
-            setSessions([
-                { id: 1, topic: 'Neural Networks 101', time_spent_minutes: 45, confidence_score: 4, session_timestamp: new Date().toISOString(), revision_done: false },
-                { id: 2, topic: 'Calculus Review', time_spent_minutes: 30, confidence_score: 3, session_timestamp: new Date(Date.now() - 86400000).toISOString(), revision_done: true },
-            ]);
+            setSessions([]); // Clear data on error
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchSessions();
+        const init = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+                fetchSessions(user.id);
+            }
+        };
+        init();
     }, []);
 
     return (
         <>
             <Head>
-                <title>Log Session | MetaLearn AI</title>
+                <title>Log Session | MetaLearn</title>
             </Head>
 
             <motion.div

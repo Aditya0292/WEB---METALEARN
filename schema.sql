@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     error_recovery_rate FLOAT,
     optimal_session_duration INTEGER,
     total_sessions INTEGER DEFAULT 0,
+    full_name TEXT,
+    qualification TEXT DEFAULT 'Student',
+    avatar_url TEXT,
+    rank TEXT DEFAULT 'Bronze',
+    experience_points INTEGER DEFAULT 0,
+    dna_preferred_time TEXT DEFAULT 'Morning',
+    dna_learning_mode TEXT DEFAULT 'Visual',
+    dna_pattern TEXT DEFAULT 'Strategic',
     last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

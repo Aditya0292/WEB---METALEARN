@@ -51,16 +51,31 @@ export default async function handler(req, res) {
         // Calculate average confidence directly to be safe
         const totalConfidence = (allSessions || []).reduce((sum, s) => sum + (Number(s.confidence_score) || 0), 0);
         const avgConfidence = (allSessions?.length > 0) ? (totalConfidence / allSessions.length) : 0;
+        const sessionCount = allSessions?.length || 0;
+
+        // Rank Logic
+        let rank = 'Bronze';
+        if (sessionCount > 50) rank = 'Diamond';
+        else if (sessionCount > 30) rank = 'Platinum';
+        else if (sessionCount > 15) rank = 'Gold';
+        else if (sessionCount > 5) rank = 'Silver';
+
+        // Simple DNA mapping logic for demo
+        const dnaPattern = sessionCount > 10 ? "Strategic" : "Developing";
+        const dnaMode = metrics.retentionScore > 0.7 ? "Visual/Deep" : "Exploratory";
 
         await supabase.from('user_profiles').upsert({
             user_id: userId,
-            learning_speed: metrics.learningLearningSpeed || 0.5,
-            retention_score: metrics.retentionScore || 0.5,
-            consistency_score: metrics.consistencyScore || 0.5,
-            error_recovery_rate: metrics.errorRecoveryRate || 0.5,
+            learning_speed: metrics.learningLearningSpeed ?? 0.5,
+            retention_score: metrics.retentionScore ?? 0.5,
+            consistency_score: metrics.consistencyScore ?? 0.5,
+            error_recovery_rate: metrics.errorRecoveryRate ?? 0.5,
             optimal_session_duration: metrics.optimalDuration || 45,
-            total_sessions: allSessions?.length || 0, // Fix: Removing +1 as allSessions includes the new insert
-            confidence_score: avgConfidence, // Fix: Saving the calculated average
+            total_sessions: sessionCount,
+            confidence_score: avgConfidence,
+            rank: rank,
+            dna_pattern: dnaPattern,
+            dna_learning_mode: dnaMode,
             last_updated: new Date()
         });
 

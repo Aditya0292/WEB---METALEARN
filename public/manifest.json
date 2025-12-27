@@ -1,5 +1,5 @@
 {
-    "name": "MetaLearn AI",
+    "name": "MetaLearn",
     "short_name": "MetaLearn",
     "description": "AI-Powered Meta-Learning Mentor",
     "start_url": "/dashboard",
@@ -13,5 +13,4 @@
             "type": "image/svg+xml"
         }
     ]
-}
 }
