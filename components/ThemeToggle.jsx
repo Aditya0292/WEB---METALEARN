@@ -9,11 +9,11 @@ export default function ThemeToggle() {
         // Init theme from localStorage or system preference
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
-            setTheme(savedTheme);
+            setTimeout(() => setTheme(savedTheme), 0);
             document.documentElement.classList.toggle('dark', savedTheme === 'dark');
         } else {
             const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setTheme(systemDark ? 'dark' : 'light');
+            setTimeout(() => setTheme(systemDark ? 'dark' : 'light'), 0);
             document.documentElement.classList.toggle('dark', systemDark);
         }
     }, []);

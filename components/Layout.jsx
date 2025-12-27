@@ -9,10 +9,6 @@ export default function Layout({ children, user: authUser }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [profile, setProfile] = useState(null);
 
-    useEffect(() => {
-        fetchProfile();
-    }, [authUser]);
-
     const fetchProfile = async () => {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
@@ -53,6 +49,11 @@ export default function Layout({ children, user: authUser }) {
         }
     };
 
+    useEffect(() => {
+        setTimeout(() => fetchProfile(), 0);
+    }, [authUser]);
+
+
     // Mouse Parallax Logic
     // Mouse Parallax Logic
     const x = useMotionValue(0);
@@ -60,7 +61,7 @@ export default function Layout({ children, user: authUser }) {
     const [winSize, setWinSize] = useState({ w: 1000, h: 800 });
 
     useEffect(() => {
-        setWinSize({ w: window.innerWidth, h: window.innerHeight });
+        setTimeout(() => setWinSize({ w: window.innerWidth, h: window.innerHeight }), 0);
 
         const handleMouseMove = (e) => {
             x.set(e.clientX);

@@ -16,10 +16,14 @@ export default function Typewriter({ phrases, typeSpeed = 100, deleteSpeed = 50,
 
     // Typing logic
     useEffect(() => {
+        if (!phrases || phrases.length === 0) return;
+
         if (index >= phrases.length) {
-            setIndex(0);
+            setTimeout(() => setIndex(0), 0);
             return;
         }
+
+        const currentPhrase = phrases[index] || "";
 
         if (subIndex === phrases[index].length + 1 && !reverse) {
             const timeout = setTimeout(() => {
@@ -29,8 +33,10 @@ export default function Typewriter({ phrases, typeSpeed = 100, deleteSpeed = 50,
         }
 
         if (subIndex === 0 && reverse) {
-            setReverse(false);
-            setIndex((prev) => (prev + 1) % phrases.length);
+            setTimeout(() => {
+                setReverse(false);
+                setIndex((prev) => (prev + 1) % phrases.length);
+            }, 0);
             return;
         }
 

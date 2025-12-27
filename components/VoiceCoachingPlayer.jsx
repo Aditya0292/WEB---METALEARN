@@ -112,7 +112,7 @@ export default function VoiceCoachingPlayer({ coachingData }) {
 
                     <div className="mt-6 mb-4">
                         <h3 className="text-lg md:text-xl font-black leading-relaxed italic text-[var(--text-primary)] tracking-tight">
-                            "{data.insight_text}"
+                            &quot;{data.insight_text}&quot;
                         </h3>
                     </div>
 

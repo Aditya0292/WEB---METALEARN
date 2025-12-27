@@ -178,7 +178,7 @@ export default function ExperimentsPage({ session }) {
                                     <h2 className="text-3xl font-black mb-3 text-[var(--text-primary)] tracking-tight">{activeExperiment.title}</h2>
                                     <div className="p-4 rounded-xl bg-[var(--surface-highlight)]/5 border border-[var(--border)] backdrop-blur-sm">
                                         <p className="text-[var(--text-secondary)] text-sm italic font-medium">
-                                            " {activeExperiment.hypothesis} "
+                                            &quot; {activeExperiment.hypothesis} &quot;
                                         </p>
                                     </div>
                                 </div>
