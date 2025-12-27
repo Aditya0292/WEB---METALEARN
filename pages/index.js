@@ -497,10 +497,10 @@ export default function Home() {
 
         {/* --- FOOTER --- */}
         <footer className="font-display border-t border-gray-800 py-16 bg-[#0F1115] text-gray-500 text-[10px] font-black uppercase tracking-widest text-center">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-40">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-80">
             <div className="flex items-center gap-3 mb-6 md:mb-0">
               <img src="/logo.png" alt="MetaLearn Logo" className="w-5 h-5 object-contain opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all" />
-              <p>© 2025 MetaLearn. Neural Design by <a href="https://www.linkedin.com/in/aditya-havaldar-205951288/" target="_blank" rel="noopener noreferrer" className="font-black text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors cursor-pointer">Aditya Hawaldar</a>.</p>
+              <p className="text-gray-400">© 2025 MetaLearn. Neural Design by <a href="https://www.linkedin.com/in/aditya-havaldar-205951288/" target="_blank" rel="noopener noreferrer" className="font-black text-white hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 transition-all cursor-pointer drop-shadow-md hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">Aditya Hawaldar</a>.</p>
             </div>
             <div className="flex gap-8 mt-6 md:mt-0">
               <a href="#" className="hover:text-[var(--accent)] transition-colors">Privacy</a>
