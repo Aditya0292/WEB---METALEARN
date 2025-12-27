@@ -283,7 +283,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="font-display text-lg text-gray-200 max-w-2xl mx-auto mb-16 leading-relaxed font-bold uppercase tracking-widest drop-shadow-md"
+              className="font-display text-lg text-gray-200 max-w-2xl mx-auto mb-12 leading-relaxed font-bold uppercase tracking-widest drop-shadow-md"
             >
               Synchronize your cognitive throughput with our neural vector engine. Optimized for stability, velocity, and mastery.
             </motion.p>
@@ -292,7 +292,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center pointer-events-auto"
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center pointer-events-auto mb-20"
             >
               <MagneticButton className="w-full sm:w-auto">
                 <Link href="/auth" className="w-full px-10 py-5 rounded-2xl bg-[var(--accent)] text-white font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all hover:scale-[1.05] shadow-2xl shadow-[var(--accent)]/30 border border-[var(--accent)]/20">
@@ -317,7 +317,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative max-w-6xl w-full mx-auto mt-10 md:-mt-40 z-20 pointer-events-auto px-6 md:px-0"
+            className="relative max-w-6xl w-full mx-auto mt-2 mb-[-4rem] z-20 pointer-events-auto px-6 md:px-0"
           >
             {/* Soft Ambient Radiance - ENHANCED */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-600/20 blur-[150px] rounded-full opacity-60 pointer-events-none -z-10" />
@@ -436,6 +436,8 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
+
+
           {/* FADE OVERLAY TO COVER GAP - Per user request */}
           {/* Hardcoded Dark Mode Background: bg-[#0F1115] */}
           <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0F1115] to-transparent pointer-events-none z-30" />
@@ -508,6 +510,6 @@ export default function Home() {
           </div>
         </footer>
       </main>
-    </div>
+    </div >
   );
 }
