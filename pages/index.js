@@ -225,10 +225,10 @@ export default function Home() {
           onMouseMove={handleHeroMove}
           className="relative min-h-[120vh] flex flex-col items-center pt-32 px-6 overflow-hidden md:px-0"
         >
-          {/* SPLINE BACKGROUND */}
+          {/* SPLINE BACKGROUND - Hidden on mobile for performance */}
           <motion.div
             style={{ x, y }}
-            className="absolute inset-0 z-0 scale-105 -translate-y-[5%]" // Reduced Scale (Zoom out) and adjusted position
+            className="hidden md:block absolute inset-0 z-0 scale-105 -translate-y-[5%]"
           >
             {/* @ts-ignore */}
             <spline-viewer url="https://prod.spline.design/SM-CqQU8sBrOLdOW/scene.splinecode"></spline-viewer>
@@ -237,14 +237,14 @@ export default function Home() {
             <div className="absolute inset-0 pointer-events-none" />
           </motion.div>
 
-          {/* Floating Parallax Glows */}
+          {/* Floating Parallax Glows - Hidden on mobile for performance */}
           <motion.div
             style={{ y: useTransform(scrollY, [0, 1000], [0, -200]) }}
-            className="absolute top-1/4 -left-20 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none"
+            className="hidden md:block absolute top-1/4 -left-20 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[120px] pointer-events-none"
           />
           <motion.div
             style={{ y: useTransform(scrollY, [0, 1000], [0, 200]) }}
-            className="absolute bottom-1/4 -right-20 w-96 h-96 bg-[var(--accent-gradient-end)]/5 rounded-full blur-[120px] pointer-events-none"
+            className="hidden md:block absolute bottom-1/4 -right-20 w-96 h-96 bg-[var(--accent-gradient-end)]/5 rounded-full blur-[120px] pointer-events-none"
           />
 
           <motion.div
